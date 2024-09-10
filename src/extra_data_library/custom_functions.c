@@ -1,5 +1,3 @@
-//Custom Functions as in Riebel et al. Scientific Reports 2024
-
 #include <unistd.h>
 
 #include "../config/extra_data_config.h"
@@ -7,6 +5,8 @@
 #include "../libraries_common/common_data_structures.h"
 #include "../utils/file_utils.h"
 #include "../domains_library/custom_mesh_info_data.h"
+
+//Written by Leto Riebel
 
 //Sets extra data array for stem cell region, transmurality, apicobasal gradient,
 //and infarct zone from the mesh file and infarct stage from the .ini file
@@ -19,6 +19,8 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
 
     uint32_t infarct_stage = 5;
     GET_PARAMETER_NUMERIC_VALUE_OR_REPORT_ERROR(uint32_t, infarct_stage, config, "infarct_stage");
+
+    //These are applied to ALL cells including iPSC-CMs, useful for simulating drugs
     real INa_mult = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, INa_mult, config, "INa_mult");
     real IKr_mult = 1;
@@ -34,6 +36,7 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
     real IK1_mult = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, IK1_mult, config, "IK1_mult");
 
+    //Theses are applied to the REMOTE ZONE, i.e. non-infarcted tissue and not including iPSC-CMs
     real INa_mult_RZ = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, INa_mult_RZ, config, "INa_mult_RZ");
     real IKr_mult_RZ = 1;
@@ -61,6 +64,7 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
     real IClCa_mult_RZ = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, IClCa_mult_RZ, config, "IClCa_mult_RZ");
 
+    //Theses are applied to the INFARCT CENTER, not including iPSC-CMs
     real INa_mult_IZ = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, INa_mult_IZ, config, "INa_mult_IZ");
     real IKr_mult_IZ = 1;
@@ -84,6 +88,7 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
     real Ko_mult_IZ = 5;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, Ko_mult_IZ, config, "Ko_mult_IZ");
 
+    //Theses are applied to the BORDER ZONE, not including iPSC-CMs
     real INa_mult_BZ = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, INa_mult_BZ, config, "INa_mult_BZ");
     real IKr_mult_BZ = 1;
@@ -111,6 +116,7 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
     real IClCa_mult_BZ = 1;
     GET_PARAMETER_NUMERIC_VALUE_OR_USE_DEFAULT(real, IClCa_mult_BZ, config, "IClCa_mult_BZ");
 
+    //Layer, infarct zone, apicobasal and fast-endo are set for each cell
     uint32_t i;
     OMP(parallel for)
     for (i = 0; i < num_active_cells; i++) {
@@ -120,7 +126,8 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
         extra_data[i+(3*num_active_cells)] = APICOBASAL(ac[i]); //float number between 0 and 1
         extra_data[i+(4*num_active_cells)] = FAST_ENDO(ac[i]); //float number between 0 and 1
     }
-    extra_data[(5*num_active_cells)] = infarct_stage; //healthy 0, ischemic 1, acute 2, acute-chronic 3, chronic 4
+    //Remodellings are set globally and applied only to the relevant cells, identified by layer and infarct zone
+    extra_data[(5*num_active_cells)] = infarct_stage;
     extra_data[(5*num_active_cells + 1)] = INa_mult;
     extra_data[(5*num_active_cells + 2)] = IKr_mult;
     extra_data[(5*num_active_cells + 3)] = ICaL_mult;
@@ -168,30 +175,6 @@ SET_EXTRA_DATA(set_extra_data_with_stem_cells) {
     extra_data[(5*num_active_cells + 42)] = Iup_mult_BZ;
     extra_data[(5*num_active_cells + 43)] = IKCa_mult_BZ;
     extra_data[(5*num_active_cells + 44)] = IClCa_mult_BZ;
-
-    return extra_data;
-}
-
-//Sets extra data array for transmurality, apicobasal gradient, and
-//infarct zone from the mesh file and infarct stage from the .ini file
-SET_EXTRA_DATA(set_extra_data_with_infarction) {
-    uint32_t num_active_cells = the_grid->num_active_cells;
-    struct cell_node ** ac = the_grid->active_cells;
-
-    *extra_data_size = sizeof(real)*((num_active_cells)*3 + 1);
-    real *extra_data = (real*)malloc(*extra_data_size);
-
-    uint32_t infarct_stage = 5;
-    GET_PARAMETER_NUMERIC_VALUE_OR_REPORT_ERROR(uint32_t, infarct_stage, config, "infarct_stage");
-
-    uint32_t i;
-    OMP(parallel for)
-    for (i = 0; i < num_active_cells; i++) {
-        extra_data[i] = LAYER_2(ac[i]); //fast-endo 0, endo 1, mid 2, epi 3
-        extra_data[i+num_active_cells] = INFARCT_ZONE_2(ac[i]); //healthy 0, infarct 1, border 2, remote 3
-        extra_data[i+(2*num_active_cells)] = APICOBASAL_2(ac[i]); //float number between 0 and 1
-    }
-    extra_data[(3*num_active_cells)] = infarct_stage; //healthy 0, ischemic 1, acute 2, acute-chronic 3, chronic 4
 
     return extra_data;
 }
