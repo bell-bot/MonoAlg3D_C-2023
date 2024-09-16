@@ -1,4 +1,4 @@
-This version of MonoAlg3D contains extra functions necessary to reproduce the results in Riebel et al., Scientific Reports, 2024.
+This version of MonoAlg3D contains extra functions necessary to reproduce the results in Riebel et al., Scientific Reports (2024), https://doi.org/10.1038/s41598-024-67951-5.
 
 # MonoAlg3D ![build](https://github.com/rsachetto/MonoAlg3D_C/actions/workflows/build.yml/badge.svg)
 
@@ -64,8 +64,8 @@ Among others.
 
 # How to cite:
 
-For the updates made in Riebel et al. 2024:
-Riebel LL, Wang, ZJ, Martinez-Navarro H, Trovato C, Camps J, Berg LA, Zhou X, Doste R, Sachetto Oliveira, R Weber dos Santos R, Biasetti J, Rodriguez B. In Silico Evaluation of Cell Therapy in Acute versus Chronic Infarction: Role of Automaticity, Heterogeneity and Purkinje in Human. Scientific Reports. 2024
+For the updates made in Riebel et al., 2024:
+Riebel LL, Wang, ZJ, Martinez-Navarro H, Trovato C, Camps J, Berg LA, Zhou X, Doste R, Sachetto Oliveira, R Weber dos Santos R, Biasetti J, Rodriguez B. In Silico Evaluation of Cell Therapy in Acute versus Chronic Infarction: Role of Automaticity, Heterogeneity and Purkinje in Human. Sci Rep, 14 21584 (2024). https://doi.org/10.1038/s41598-024-67951-5
 
 For MonoAlg3D:
 Oliveira RS, Rocha BM, Burgarelli D, Meira Jr W, Constantinides C, dos Santos RW. Performance evaluation of GPU parallelization, space‐time adaptive algorithms, and their combination for simulating cardiac electrophysiology. Int J Numer Meth Biomed Engng. 2018;34:e2913. https://doi.org/10.1002/cnm.2913
