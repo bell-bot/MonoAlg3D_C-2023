@@ -808,4 +808,13 @@ if (is_paci == 0) {
     //
     //Cardiac iPSC-CM model Paci2020, Paci et al. 2020 (https://doi.org/10.1016/j.bpj.2020.03.018)
     //Available at: www.mcbeng.it/en/category/software.html
+    //
+    //TODO: Copy Paci model here 
+    //Include scaling factors as defined in the bottom of the Paci_ToRORd .c and .cu files in the form of if(is_paci==2){g_x = g_x * atrial_x;} else if(is_paci==3) {g_x = g_x * nodal_x;}
+    //Convert units from V to mV, s to ms, m to cm, S/F to nS/pF, F to pF, and C/mol to C/mmol
+    //Define rDY[x] = , a_[x], and b_[x] as (x_inf - x) / tau_x, -1 / tau_x, and x_inf / tau_inf for all gating variables (Rush-Larsen method)
+    //DO NOT COPY AND PASTE "Stimulation" paragraph
+    //Change "-i_stim" to "+stim_current"
+    //
+    //To test correct implementation, a test case initilisation file and single-cube-mesh are available in this repository
 }
