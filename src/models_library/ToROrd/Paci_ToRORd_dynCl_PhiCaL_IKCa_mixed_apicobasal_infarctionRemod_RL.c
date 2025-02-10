@@ -51,7 +51,7 @@ SET_ODE_INITIAL_CONDITIONS_CPU(set_model_initial_conditions_cpu) {
         int infarct_zone = (int) extra_data[i + (2*num_cells)];
         real *sv = &solver->sv[i * NEQ];
 
-        #include "Paci_ToRORd_dynCl_PhiCaL_IKCa_mixed_apicobasal_infarctionRemod_SS.common.c"
+        #include "Paci_ToRORd_dynCl_PhiCaL_IKCa_mixed_apicobasal_infarctionRemod_SteadyState.common.c"
         if(is_paci > 0) {
             sv[0] = v;             // V;         millivolt
             sv[1] = caSR;          // Ca_SR;     millimolar
