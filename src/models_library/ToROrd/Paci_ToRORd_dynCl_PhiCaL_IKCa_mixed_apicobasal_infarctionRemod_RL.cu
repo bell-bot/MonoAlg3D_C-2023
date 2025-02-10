@@ -107,7 +107,7 @@ __global__ void kernel_set_model_initial_conditions(real *sv, int num_volumes, s
     int infarct_stage = (int) extra_data[5 * num_volumes];
 
     if (thread_id < num_volumes) {
-        #include "Paci_ToRORd_dynCl_PhiCaL_IKCa_mixed_apicobasal_infarctionRemod_SS.common.c"
+        #include "Paci_ToRORd_dynCl_PhiCaL_IKCa_mixed_apicobasal_infarctionRemod_SteadyState.common.c"
         if (is_paci > 0) {
             *((real * )((char *) sv + pitch * 0) + thread_id)  = v;             // mV;         millivolt
             *((real * )((char *) sv + pitch * 1) + thread_id)  = caSR;          // Ca_SR;     millimolar
