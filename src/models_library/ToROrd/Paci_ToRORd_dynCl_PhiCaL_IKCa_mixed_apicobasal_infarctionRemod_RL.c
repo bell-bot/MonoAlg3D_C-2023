@@ -149,7 +149,6 @@ SET_ODE_INITIAL_CONDITIONS_CPU(set_model_initial_conditions_cpu) {
 }
 
 SOLVE_MODEL_ODES(solve_model_odes_cpu) {
-
     uint32_t sv_id;
 
     size_t num_cells_to_solve = ode_solver->num_cells_to_solve;
@@ -183,67 +182,66 @@ SOLVE_MODEL_ODES(solve_model_odes_cpu) {
             sv_id = cells_to_solve[i];
         else
             sv_id = i;
-
-        if(adpt) {
-            solve_RL_cpu_adpt(sv + (sv_id * NEQ), stim_currents[i], current_t + dt, sv_id, ode_solver, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
-            //Uncomment if using euler
-            //solve_forward_euler_cpu_adpt(sv + (sv_id * NEQ), stim_currents[i], current_t + dt, sv_id, ode_solver, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
-        } else {
-            for (int j = 0; j < num_steps; ++j) {
-                solve_model_ode_cpu(dt, sv + (sv_id * NEQ), stim_currents[i], is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
+        
+        if((infarct_zone != 1) || (infarct_stage != 3)) {
+            if(adpt) {
+                solve_RL_cpu_adpt(sv + (sv_id * NEQ), stim_currents[i], current_t + dt, sv_id, ode_solver, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
+                //Uncomment if using euler
+                //solve_forward_euler_cpu_adpt(sv + (sv_id * NEQ), stim_currents[i], current_t + dt, sv_id, ode_solver, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
+            } else {
+                for (int j = 0; j < num_steps; ++j) {
+                    solve_model_ode_cpu(dt, sv + (sv_id * NEQ), stim_currents[i], is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
+                }
             }
         }
     }
 }
 
 void solve_model_ode_cpu(real dt, real *sv, real stim_current, int is_paci, int layer, int infarct_zone, int infarct_stage, real apicobasal, real *current_scaling)  {
-    if((infarct_zone != 1) || (infarct_stage != 3)) {
-        const real TOLERANCE = 1e-8;
-        real rY[NEQ], rDY[NEQ];
+    const real TOLERANCE = 1e-8;
+    real rY[NEQ], rDY[NEQ];
 
-        for(int i = 0; i < NEQ; i++)
-            rY[i] = sv[i];
+    for(int i = 0; i < NEQ; i++)
+        rY[i] = sv[i];
 
-        real a[NEQ], b[NEQ];
-        RHS_cpu(a, b, sv, rDY, stim_current, dt, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
+    real a[NEQ], b[NEQ];
+    RHS_cpu(a, b, sv, rDY, stim_current, dt, is_paci, layer, infarct_zone, infarct_stage, apicobasal, current_scaling);
 
+    bool is_rush_larsen[NEQ];
+    //Uncomment if using euler
+    //for (int i = 0; i < NEQ; i++)
+    //       is_rush_larsen[i] = false;
+    if((is_paci > 0) && (is_paci < 4)) {
+       for (int i = 0; i < NEQ_PACI; i++)
+            is_rush_larsen[i] = true;
+       for (int i = NEQ_PACI; i < NEQ; i++)
+            is_rush_larsen[i] = false;
+       is_rush_larsen[0] = false;
+       is_rush_larsen[1] = false;
+       is_rush_larsen[2] = false;
+       is_rush_larsen[16] = false;
+    } else {
+       for (int i = 0; i < 9; i++)
+           is_rush_larsen[i] = false;
+       for (int i = 9; i < 29; i++)
+           is_rush_larsen[i] = true;
+       is_rush_larsen[29] = false;
+       is_rush_larsen[30] = false;
+       for (int i = 31; i < 36; i++)
+           is_rush_larsen[i] = true;
+       for (int i = 36; i < 42; i++)
+           is_rush_larsen[i] = false;
+       is_rush_larsen[42] = true;
+       is_rush_larsen[43] = false;
+       is_rush_larsen[44] = false;
+    }
 
-        bool is_rush_larsen[NEQ];
-        //Uncomment if using euler
-        //for (int i = 0; i < NEQ; i++)
-        //       is_rush_larsen[i] = false;
-        if((is_paci > 0) && (is_paci < 4)) {
-           for (int i = 0; i < NEQ_PACI; i++)
-                is_rush_larsen[i] = true;
-           for (int i = NEQ_PACI; i < NEQ; i++)
-                is_rush_larsen[i] = false;
-           is_rush_larsen[0] = false;
-           is_rush_larsen[1] = false;
-           is_rush_larsen[2] = false;
-           is_rush_larsen[16] = false;
-        } else {
-           for (int i = 0; i < 9; i++)
-               is_rush_larsen[i] = false;
-           for (int i = 9; i < 29; i++)
-               is_rush_larsen[i] = true;
-           is_rush_larsen[29] = false;
-           is_rush_larsen[30] = false;
-           for (int i = 31; i < 36; i++)
-               is_rush_larsen[i] = true;
-           for (int i = 36; i < 42; i++)
-               is_rush_larsen[i] = false;
-           is_rush_larsen[42] = true;
-           is_rush_larsen[43] = false;
-           is_rush_larsen[44] = false;
+    for (int i = 0; i < NEQ; i++) {
+        if (is_rush_larsen[i]) {
+            SOLVE_EQUATION_RUSH_LARSEN_CPU(i);
         }
-
-        for (int i = 0; i < NEQ; i++) {
-            if (is_rush_larsen[i]) {
-                SOLVE_EQUATION_RUSH_LARSEN_CPU(i);
-            }
-            else {
-                SOLVE_EQUATION_EULER_CPU(i);
-            }
+        else {
+            SOLVE_EQUATION_EULER_CPU(i);
         }
     }
 }
