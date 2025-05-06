@@ -12,15 +12,16 @@ def read_ecg_readings (input_file):
 	return timesteps, currents, num_leads
 	
 def plot_ecg_readings (t, currents, nleads):
+	fig, axs = plt.subplots(nleads, figsize=(7, 5*nleads))
 	for i in range(nleads):
-		#plt.grid()
-		plt.plot(t, currents[:,i], label="lead_%d" % (i), c="black", linewidth=3.0)
-		plt.xlabel("t (ms)",fontsize=15)
-		plt.ylabel("Current (mA)",fontsize=15)
-		plt.title("ECG reading - Lead %d" % (i),fontsize=14)
-		plt.legend(loc=0,fontsize=14)
-		plt.show()
-		#plt.savefig("ecg_lead_%d.pdf" % (i))
+		ax = axs[i]
+		ax.plot(t, currents[:,i], label="lead_%d" % (i), c="black", linewidth=3.0)
+		ax.set_xlabel("t (ms)",fontsize=15)
+		ax.set_ylabel("Current (mA)",fontsize=15)
+		ax.set_title("ECG reading - Lead %d" % (i),fontsize=14)
+		ax.legend(loc=0,fontsize=14)
+		#plt.show(block=True)
+	plt.savefig("ecg_leads.pdf")
 
 def main():
 	
